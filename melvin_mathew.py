@@ -35,8 +35,11 @@ def write_image(file_name, image_object, resolution):
 def write_gif(file_name, seq, resolution=[512 * 2, 512]):
     img = Image.new('RGB', tuple(resolution))
 
-    img.save(file_name, save_all=True,
+    img.save(file_name + '.gif', save_all=True,
              append_images=seq, duration=500, loop=0)
+    img.save(file_name + '.tiff', save_all=True,
+             append_images=seq, duration=500, loop=0)
+
     return img
 
 
@@ -161,22 +164,23 @@ def main():
     compress_dwt_pixels = dwt_compress(input_pixels)
     if coeff == -1:
         #input_seq = []
+        # for i in range(55,65):
+        #    decompress_combine_images(i*4096).show()
         process_workers = multiprocessing.Pool(5)
-        write_gif("result.gif", process_workers.map(
+        write_gif("result", process_workers.map(
             decompress_combine_images, [x * 4096 for x in range(1, 65)]))
         process_workers.close()
         print "Animation (name: 'result.gif') saved"
+        print "Images saved as TIFF (name: 'result.tiff')"
     else:
         write_image('result.bmp', decompress_combine_images(
             N=coeff), [512 * 2, 512])
         print "Image (name: 'result.bmp') saved"
         print "DCT image on left and DWT image on right"
     print datetime.datetime.now() - now
-    # write_image('original1.bmp', input_pixels, resolution)
+
 
 # Combine DCT and DWT and output as 1 side by side image
-
-
 def decompress_combine_images(N=262144):
     resolution = [512, 512]
     img = Image.new('RGB', tuple([512 * 2, 512]))
@@ -196,9 +200,8 @@ def decompress_combine_images(N=262144):
 
     return img
 
+
 # DWT implementation
-
-
 def dwt_compress(pixels, resolution=[512, 512]):
     return dwt_compress_row(pixels, resolution[0] / 2, resolution[1])
 
